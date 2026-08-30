@@ -5,15 +5,15 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static("."));
+
 app.get("/", (req, res) => {
   res.sendFile("aura.html", {
     root: process.cwd()
   });
 });
+
 app.post("/api/chat", async (req, res) => {
-
   try {
-
     const question = req.body.message;
 
     if (!question) {
@@ -22,37 +22,64 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
-    const ollamaResponse = await fetch(
-      "http://localhost:11434/api/generate",
+    const geminiResponse = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
       {
         method: "POST",
 
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-goog-api-key": process.env.GEMINI_API_KEY
         },
 
         body: JSON.stringify({
-          model: "llama3.2",
-
-          prompt: `
+          contents: [
+            {
+              parts: [
+                {
+                  text: `
 You are Aura AI.
-Give accurate, clear and concise answers.
-Answer directly.
+
+Give accurate, current, clear and concise answers.
+Answer directly and naturally.
 
 User:
 ${question}
-          `,
-
-          stream: true,
-
-          keep_alive: "10m"
+                  `
+                }
+              ]
+            }
+          ]
         })
       }
     );
 
-    if (!ollamaResponse.ok) {
+    if (!geminiResponse.ok) {
+      const errorText =
+        await geminiResponse.text();
+
+      console.error(
+        "Gemini API error:",
+        errorText
+      );
+
       throw new Error(
-        "Ollama request failed"
+        "Gemini request failed"
+      );
+    }
+
+    const data =
+      await geminiResponse.json();
+
+    const answer =
+      data?.candidates?.[0]
+        ?.content?.parts
+        ?.map(part => part.text || "")
+        .join("");
+
+    if (!answer) {
+      throw new Error(
+        "Gemini returned no answer"
       );
     }
 
@@ -61,114 +88,23 @@ ${question}
       "text/plain; charset=utf-8"
     );
 
-    const reader =
-      ollamaResponse.body.getReader();
-
-    const decoder =
-      new TextDecoder();
-
-    let buffer = "";
-
-    while (true) {
-
-      const { done, value } =
-        await reader.read();
-
-      if (done) break;
-
-      buffer += decoder.decode(
-        value,
-        {
-          stream: true
-        }
-      );
-
-      const lines =
-        buffer.split("\n");
-
-      buffer = lines.pop();
-
-      for (const line of lines) {
-
-        if (!line.trim()) {
-          continue;
-        }
-
-        try {
-
-          const data =
-            JSON.parse(line);
-
-          if (data.response) {
-            res.write(
-              data.response
-            );
-          }
-
-        } catch (error) {
-
-          console.error(
-            "JSON parse error:",
-            error
-          );
-
-        }
-      }
-    }
-
-    if (buffer.trim()) {
-
-      try {
-
-        const data =
-          JSON.parse(buffer);
-
-        if (data.response) {
-          res.write(
-            data.response
-          );
-        }
-
-      } catch (error) {
-
-        console.error(
-          "Final JSON parse error:",
-          error
-        );
-
-      }
-    }
-
-    res.end();
+    res.send(answer);
 
   } catch (error) {
-
     console.error(
       "Aura AI error:",
       error
     );
 
-    if (!res.headersSent) {
-
-      res
-        .status(500)
-        .json({
-          error:
-            "Aura could not generate an answer."
-        });
-
-    } else {
-
-      res.end();
-
-    }
+    res.status(500).json({
+      error:
+        "Aura could not generate an answer."
+    });
   }
 });
 
 app.listen(PORT, () => {
-
   console.log(
     `Aura AI running at http://localhost:${PORT}`
   );
-
 });
