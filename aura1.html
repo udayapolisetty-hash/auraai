@@ -1,0 +1,2493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura AI</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      color: white;
+      background:
+        radial-gradient(circle at 85% 35%, rgba(0, 153, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 65% 55%, rgba(154, 43, 255, 0.18), transparent 32%),
+        linear-gradient(135deg, #02030d, #05051a 55%, #02020c);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(255, 255, 255, .7) 1px, transparent 1px);
+      background-size: 90px 90px;
+      opacity: .12;
+    }
+
+    .app {
+      width: 100%;
+      min-height: 100vh;
+      padding: 18px 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ---------------- HEADER ---------------- */
+
+    .topbar {
+      min-height: 82px;
+      border: 1px solid rgba(130, 118, 255, 0.18);
+      border-radius: 28px;
+      display: grid;
+      grid-template-columns: 260px minmax(260px, 510px) 1fr;
+      align-items: center;
+      gap: 30px;
+      padding: 14px 28px;
+      background: rgba(3, 4, 18, 0.72);
+      backdrop-filter: blur(18px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 800;
+      font-size: 27px;
+      letter-spacing: 1px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      border: 2px solid #9b3cff;
+      box-shadow:
+        0 0 15px #792eff,
+        0 0 25px rgba(0, 203, 255, .7);
+    }
+
+    .top-search {
+      height: 50px;
+      border-radius: 28px;
+      border: 1px solid rgba(139, 140, 207, 0.35);
+      background: rgba(8, 9, 27, 0.78);
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+    }
+
+    .top-search input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: 0;
+      outline: 0;
+      color: white;
+      font-size: 16px;
+    }
+
+    .top-search span {
+      font-size: 23px;
+      opacity: .75;
+    }
+
+    nav {
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(112, 109, 180, .2);
+      border-radius: 20px;
+      padding: 5px;
+      background: rgba(12, 12, 31, .7);
+    }
+
+    nav button {
+      border: 0;
+      background: transparent;
+      color: #ddd;
+      padding: 12px 19px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    nav button.active {
+      color: white;
+      background: linear-gradient(135deg, #5116b8, #341073);
+      box-shadow: 0 0 20px rgba(130, 42, 255, .35);
+    }
+
+    /* ---------------- MAIN ---------------- */
+
+    .main {
+      display: grid;
+      grid-template-columns: 56% 44%;
+      gap: 12px;
+      margin-top: 28px;
+      min-height: 735px;
+    }
+
+    .left {
+      padding: 10px 30px 0 36px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 4vw, 55px);
+      line-height: 1.05;
+      margin-bottom: 14px;
+    }
+
+    h1 span {
+      background: linear-gradient(90deg, #aa43ff, #6959ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      color: #c5c6d4;
+      margin-bottom: 28px;
+      font-size: 17px;
+    }
+
+    /* ---------------- FEATURE CARDS ---------------- */
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 25px;
+    }
+
+    .feature {
+      min-height: 145px;
+      padding: 21px 17px;
+      border-radius: 18px;
+      border: 1px solid rgba(132, 67, 255, .45);
+      background:
+        linear-gradient(145deg,
+          rgba(20, 19, 48, .75),
+          rgba(4, 6, 22, .75));
+      transition: .25s;
+    }
+
+    .feature:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 22px rgba(124, 47, 255, .25);
+    }
+
+    .feature-icon {
+      font-size: 29px;
+      margin-bottom: 12px;
+    }
+
+    .feature h3 {
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
+
+    .feature p {
+      color: #b8b8ca;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    /* ---------------- CHAT ---------------- */
+
+    .chat-panel {
+      height: 455px;
+      border: 1px solid rgba(125, 126, 196, .32);
+      border-radius: 24px;
+      background: rgba(4, 5, 20, .72);
+      backdrop-filter: blur(15px);
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      box-shadow: inset 0 0 40px rgba(53, 38, 122, .06);
+    }
+
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 6px 15px 6px;
+    }
+
+    .chat-box::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .chat-box::-webkit-scrollbar-thumb {
+      background: #595976;
+      border-radius: 10px;
+    }
+
+    .message-row {
+      width: 100%;
+      display: flex;
+      margin-bottom: 17px;
+    }
+
+    .message-row.user-row {
+      justify-content: flex-end;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin-right: 10px;
+      background: #0d102c;
+      border: 1px solid #4338a2;
+      color: #b86dff;
+      box-shadow: 0 0 15px rgba(121, 48, 255, .3);
+    }
+
+    .message {
+      max-width: 78%;
+      padding: 15px 18px;
+      line-height: 1.55;
+      border-radius: 17px;
+      font-size: 15px;
+      white-space: pre-wrap;
+    }
+
+    .message.ai {
+      background: linear-gradient(135deg,
+          rgba(22, 23, 50, .95),
+          rgba(12, 13, 33, .95));
+      border: 1px solid rgba(105, 101, 171, .2);
+    }
+
+    .message.user {
+      background: linear-gradient(135deg, #5923c8, #32158d);
+      border: 1px solid rgba(133, 81, 255, .55);
+    }
+
+    .sender {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+      height: 65px;
+      border-radius: 20px;
+      border: 1px solid rgba(107, 105, 174, .3);
+      background: rgba(13, 14, 39, .85);
+      padding: 7px 9px 7px 18px;
+      align-items: center;
+    }
+
+    #question {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      background: transparent;
+      color: white;
+      border: 0;
+      outline: 0;
+      font-size: 16px;
+    }
+
+    #question::placeholder,
+    #topQuestion::placeholder {
+      color: #8d8da8;
+    }
+
+    #askBtn {
+      width: 49px;
+      height: 49px;
+      min-width: 49px;
+      border-radius: 50%;
+      border: 0;
+      cursor: pointer;
+      font-size: 22px;
+      color: white;
+      background: linear-gradient(135deg, #641ee0, #226cff);
+      box-shadow: 0 0 17px rgba(87, 64, 255, .5);
+    }
+
+    /* ---------------- ROBOT SIDE ---------------- */
+
+    .right {
+      position: relative;
+      min-height: 700px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-direction: column;
+    }
+
+    .robot-zone {
+      width: 100%;
+      height: 555px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .glow {
+      position: absolute;
+      width: 430px;
+      height: 430px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle,
+          rgba(44, 89, 255, .35),
+          rgba(119, 39, 255, .16) 38%,
+          transparent 68%);
+      filter: blur(12px);
+    }
+
+    .orbit {
+      position: absolute;
+      width: 590px;
+      height: 245px;
+      border-radius: 50%;
+      border: 4px solid #9a38ff;
+      box-shadow:
+        0 0 16px #802bff,
+        inset 0 0 12px #1dbfff;
+      transform: rotate(-11deg);
+      opacity: .85;
+    }
+
+    .orbit.two {
+      width: 580px;
+      height: 220px;
+      transform: rotate(12deg) translateY(145px);
+      border-color: #187dff;
+      opacity: .55;
+    }
+
+    .robot {
+      width: min(470px, 90%);
+      max-height: 510px;
+      object-fit: contain;
+      z-index: 3;
+      position: relative;
+      filter:
+        drop-shadow(0 0 20px rgba(94, 62, 255, .55)) drop-shadow(0 0 35px rgba(0, 166, 255, .25));
+    }
+
+    .robot-placeholder {
+      width: 330px;
+      height: 390px;
+      position: relative;
+      z-index: 3;
+      display: none;
+      place-items: center;
+      font-size: 190px;
+      filter: drop-shadow(0 0 30px #7a3cff);
+    }
+
+    .platform {
+      position: absolute;
+      bottom: 15px;
+      width: 500px;
+      height: 100px;
+      border-radius: 50%;
+      background:
+        radial-gradient(ellipse,
+          #172a8d 0%,
+          #171453 42%,
+          #060816 65%);
+      border: 2px solid #215dff;
+      box-shadow:
+        0 0 20px #176cff,
+        0 0 35px rgba(163, 34, 255, .5);
+    }
+
+    /* ---------------- MIC ---------------- */
+
+    .voice-control {
+      position: relative;
+      z-index: 5;
+      margin-top: -23px;
+      text-align: center;
+    }
+
+    #voiceBtn {
+      width: 105px;
+      height: 105px;
+      border-radius: 50%;
+      border: 4px solid #6a4dff;
+      font-size: 43px;
+      color: white;
+      cursor: pointer;
+      background:
+        radial-gradient(circle at 40% 30%, #343465, #151534 70%);
+      box-shadow:
+        0 0 20px #822fff,
+        0 0 34px #00aaff;
+      transition: .25s;
+    }
+
+    #voiceBtn:hover {
+      transform: scale(1.06);
+    }
+
+    #voiceBtn.listening {
+      animation: micPulse 1.2s infinite;
+    }
+
+    @keyframes micPulse {
+      0% {
+        box-shadow:
+          0 0 15px #8038ff,
+          0 0 20px #00aaff;
+      }
+
+      50% {
+        box-shadow:
+          0 0 35px #a63cff,
+          0 0 60px #00d4ff;
+        transform: scale(1.08);
+      }
+
+      100% {
+        box-shadow:
+          0 0 15px #8038ff,
+          0 0 20px #00aaff;
+      }
+    }
+
+    .voice-control h3 {
+      margin-top: 12px;
+      font-size: 18px;
+    }
+
+    #status {
+      margin-top: 6px;
+      color: #8b64ff;
+      min-height: 22px;
+      font-size: 15px;
+    }
+
+    /* ---------------- FOOTER ---------------- */
+
+    .footer {
+      min-height: 65px;
+      margin-top: 17px;
+      border-radius: 28px;
+      border: 1px solid rgba(102, 103, 174, .25);
+      background: rgba(4, 5, 19, .78);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      align-items: center;
+      padding: 0 30px;
+      color: #b9b9ca;
+    }
+
+    .online {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #18dd82;
+      box-shadow: 0 0 12px #18dd82;
+    }
+
+    .listening-footer {
+      text-align: center;
+    }
+
+    .wave {
+      display: inline-block;
+      margin-left: 13px;
+      color: #2ba6ff;
+      letter-spacing: 2px;
+    }
+
+    .powered {
+      text-align: right;
+    }
+
+    /* ---------------- RESPONSIVE ---------------- */
+
+    @media (max-width: 1100px) {
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        justify-self: start;
+      }
+
+      .main {
+        grid-template-columns: 1fr;
+      }
+
+      .right {
+        min-height: 650px;
+      }
+
+      .features {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+
+      .app {
+        padding: 10px;
+      }
+
+      .left {
+        padding: 10px;
+      }
+
+      .features {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      nav {
+        flex-wrap: wrap;
+      }
+
+      .footer {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 18px;
+      }
+
+      .listening-footer,
+      .powered {
+        text-align: left;
+      }
+    }
+
+    /* CLICKABLE FEATURE BOXES */
+
+    .feature {
+      cursor: pointer;
+    }
+
+    .feature:hover {
+      transform: translateY(-5px);
+      border-color: #9b4dff;
+
+      box-shadow:
+        0 0 15px rgba(151, 61, 255, 0.35),
+        0 0 30px rgba(0, 183, 255, 0.12);
+    }
+
+    .feature.active {
+      border-color: #b04cff;
+
+      background:
+        linear-gradient(145deg,
+          rgba(96, 31, 180, 0.28),
+          rgba(10, 11, 34, 0.9));
+
+      box-shadow:
+        0 0 18px rgba(158, 55, 255, 0.45);
+    }
+
+
+    /* INFORMATION PANEL */
+
+    .feature-detail {
+      display: none;
+
+      margin-bottom: 22px;
+      padding: 18px 20px;
+
+      border-radius: 18px;
+
+      border:
+        1px solid rgba(139, 67, 255, 0.45);
+
+      background:
+        linear-gradient(135deg,
+          rgba(20, 18, 48, 0.96),
+          rgba(5, 7, 24, 0.96));
+
+      box-shadow:
+        0 0 22px rgba(99, 48, 255, 0.18);
+    }
+
+    .feature-detail.show {
+      display: block;
+    }
+
+    .feature-detail h2 {
+      margin-bottom: 8px;
+      color: #b25cff;
+      font-size: 20px;
+    }
+
+    .feature-detail p {
+      color: #c2c2d2;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+
+    /* SUGGESTION BUTTONS */
+
+    .suggestion-btn {
+      padding: 8px 13px;
+      margin: 4px;
+
+      border-radius: 18px;
+
+      border:
+        1px solid rgba(145, 78, 255, 0.55);
+
+      background:
+        rgba(58, 28, 120, 0.35);
+
+      color: white;
+
+      cursor: pointer;
+    }
+
+    .suggestion-btn:hover {
+      background:
+        linear-gradient(135deg,
+          #6721d7,
+          #3422a5);
+    }
+
+    /* =========================
+   HISTORY PAGE
+========================= */
+
+    .history-page {
+      display: none;
+      margin-top: 28px;
+      padding: 30px 36px;
+      min-height: 650px;
+
+      border: 1px solid rgba(125, 126, 196, .25);
+      border-radius: 24px;
+
+      background: linear-gradient(145deg,
+          rgba(11, 11, 35, .92),
+          rgba(4, 5, 20, .92));
+    }
+
+    .history-page.show {
+      display: block;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .history-header h2 {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .history-header p {
+      color: #9797ad;
+    }
+
+    #clearHistoryBtn {
+      border: 1px solid rgba(150, 70, 255, .55);
+      background: rgba(80, 30, 150, .25);
+      color: white;
+      padding: 11px 18px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: .25s;
+    }
+
+    #clearHistoryBtn:hover {
+      background: linear-gradient(135deg,
+          #6521d7,
+          #3720a5);
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .history-item {
+      padding: 18px 20px;
+      border-radius: 16px;
+      border: 1px solid rgba(120, 90, 210, .25);
+      background: rgba(15, 15, 42, .72);
+      cursor: pointer;
+      transition: .25s;
+    }
+
+    .history-item:hover {
+      transform: translateX(5px);
+      border-color: rgba(163, 81, 255, .65);
+      background: rgba(33, 20, 67, .8);
+    }
+
+    .history-question {
+      font-size: 16px;
+      color: #eeeeff;
+      margin-bottom: 7px;
+    }
+
+    .history-time {
+      color: #77778f;
+      font-size: 12px;
+    }
+
+    .empty-history {
+      color: #88889c;
+      text-align: center;
+      padding: 80px 20px;
+      font-size: 17px;
+    }
+
+    /* =========================
+   FEATURES PAGE
+========================= */
+
+    .features-page {
+      display: none;
+      margin-top: 28px;
+      padding: 34px 36px;
+      min-height: 650px;
+
+      border: 1px solid rgba(125, 126, 196, .25);
+      border-radius: 24px;
+
+      background:
+        radial-gradient(circle at 80% 20%,
+          rgba(59, 130, 246, .12),
+          transparent 30%),
+        radial-gradient(circle at 20% 80%,
+          rgba(168, 85, 247, .12),
+          transparent 30%),
+        linear-gradient(145deg,
+          rgba(10, 11, 35, .96),
+          rgba(4, 5, 20, .96));
+    }
+
+    .features-page.show {
+      display: block;
+    }
+
+    .features-page-header {
+      max-width: 760px;
+      margin-bottom: 34px;
+    }
+
+    .features-badge {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 7px 13px;
+
+      border-radius: 20px;
+      border: 1px solid rgba(158, 85, 255, .45);
+
+      background: rgba(95, 40, 170, .2);
+      color: #bb73ff;
+
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .features-page-header h1 {
+      font-size: 38px;
+      margin-bottom: 12px;
+
+      background: linear-gradient(90deg,
+          #ffffff,
+          #a855f7,
+          #4f8cff);
+
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .features-page-header p {
+      color: #b9b9ca;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .features-page-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+      gap: 18px;
+    }
+
+    .feature-detail-card {
+      min-height: 210px;
+      padding: 23px 20px;
+
+      border-radius: 20px;
+
+      border:
+        1px solid rgba(129, 84, 225, .32);
+
+      background:
+        linear-gradient(145deg,
+          rgba(22, 21, 52, .83),
+          rgba(7, 8, 27, .9));
+
+      transition:
+        transform .25s,
+        border-color .25s,
+        box-shadow .25s;
+    }
+
+    .feature-detail-card:hover {
+      transform: translateY(-6px);
+
+      border-color:
+        rgba(167, 88, 255, .75);
+
+      box-shadow:
+        0 0 24px rgba(130, 53, 255, .2);
+    }
+
+    .feature-detail-icon {
+      width: 48px;
+      height: 48px;
+
+      margin-bottom: 17px;
+
+      border-radius: 14px;
+
+      display: grid;
+      place-items: center;
+
+      font-size: 25px;
+
+      background:
+        linear-gradient(135deg,
+          rgba(112, 48, 210, .4),
+          rgba(34, 91, 220, .32));
+
+      border:
+        1px solid rgba(155, 89, 255, .35);
+    }
+
+    .feature-detail-card h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #f2f2ff;
+    }
+
+    .feature-detail-card p {
+      color: #aaaabd;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+
+    /* RESPONSIVE FEATURES PAGE */
+
+    @media (max-width: 1100px) {
+
+      .features-page-grid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+    }
+
+    @media (max-width: 650px) {
+
+      .features-page {
+        padding: 24px 18px;
+      }
+
+      .features-page-header h1 {
+        font-size: 30px;
+      }
+
+      .features-page-grid {
+        grid-template-columns: 1fr;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- TOP HEADER -->
+
+    <header class="topbar">
+
+      <div class="logo">
+        <div class="logo-icon">✧</div>
+        AURA AI
+      </div>
+
+      <div class="top-search">
+        <input id="topQuestion" type="text" placeholder="Search anything..." />
+        <span>⌕</span>
+      </div>
+
+      <nav>
+        <button id="homeNav" class="active">Home</button>
+        <button id="featuresNav">Features</button>
+        <button id="historyNav">History</button>
+        <button id="settingsNav">Settings</button>
+      </nav>
+
+    </header>
+
+
+    <main class="main">
+
+      <!-- LEFT SIDE -->
+
+      <section class="left">
+
+        <h1>
+          Hello, I'm <span>Aura</span> 👋
+        </h1>
+
+        <p class="subtitle">
+          Your AI Assistant is here to help you anytime.
+        </p>
+
+
+        <!-- FEATURES -->
+
+        <div class="features">
+
+          <div class="feature" data-feature="answers">
+            <div class="feature-icon">💬</div>
+            <h3>Get Answers</h3>
+            <p>Ask anything and get instant answers.</p>
+          </div>
+
+          <div class="feature" data-feature="learn">
+            <div class="feature-icon">🎓</div>
+            <h3>Learn</h3>
+            <p>Explore new topics and expand knowledge.</p>
+          </div>
+
+          <div class="feature" data-feature="productivity">
+            <div class="feature-icon">✦</div>
+            <h3>Productivity</h3>
+            <p>Plan, write, summarize and achieve more.</p>
+          </div>
+
+          <div class="feature" data-feature="creative">
+            <div class="feature-icon">✎</div>
+            <h3>Creative</h3>
+            <p>Generate ideas and spark creativity.</p>
+          </div>
+
+        </div>
+
+        <div id="featureDetail" class="feature-detail">
+
+          <h2 id="featureTitle">Welcome to Aura AI</h2>
+
+          <p id="featureDescription">
+            Select an option above.
+          </p>
+
+          <div id="featureSuggestions"></div>
+
+        </div>
+
+
+        <!-- CHAT -->
+
+        <div class="chat-panel">
+
+          <div class="chat-box" id="chatBox">
+
+            <div class="message-row">
+
+              <div class="avatar">✧</div>
+
+              <div class="message ai">
+                <span class="sender">Aura</span>
+                Hi! I'm Aura. How can I assist you today?
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="input-area">
+
+            <input id="question" type="text" autocomplete="off" placeholder="Type your message..." />
+
+            <button id="askBtn" title="Send">
+              ➤
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- RIGHT SIDE -->
+
+      <section class="right">
+
+        <div class="robot-zone">
+
+          <div class="glow"></div>
+
+          <div class="orbit"></div>
+
+          <div class="orbit two"></div>
+
+          <!--
+            Put aura-robot.png in the same
+            folder as aura.html
+          -->
+
+          <img id="robotImage" class="robot" src="aura-robot.png" alt="Aura AI Robot" />
+
+          <div id="robotPlaceholder" class="robot-placeholder">
+            🤖
+          </div>
+
+          <div class="platform"></div>
+
+        </div>
+
+
+        <div class="voice-control">
+
+          <button id="voiceBtn" title="Start Aura Voice">
+            🎙
+          </button>
+
+          <h3>Click to Speak</h3>
+
+          <div id="status">
+            Hey Aura...
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+    <!-- =========================
+     FEATURES PAGE
+========================= -->
+
+    <section id="featuresPage" class="features-page">
+
+      <div class="features-page-header">
+        <span class="features-badge">✦ AURA CAPABILITIES</span>
+        <h1>Explore the Future with Aura</h1>
+        <p>
+          Discover intelligent tools designed to help you learn,
+          create, work and explore the future of AI.
+        </p>
+      </div>
+
+      <div class="features-page-grid">
+
+        <div class="feature-detail-card">
+          <div class="feature-detail-icon">✦</div>
+          <h3>Aura AI Assistant</h3>
+          <p>
+            Ask Aura anything and get intelligent answers,
+            explanations, ideas and everyday assistance.
+          </p>
+        </div>
+
+        <div class="feature-detail-card">
+          <div class="feature-detail-icon">🎓</div>
+          <h3>Aura Study</h3>
+          <p>
+            Learn difficult topics, create study plans, summarize
+            lessons and understand concepts step by step.
+          </p>
+        </div>
+
+        <div class="feature-detail-card">
+          <div class="feature-detail-icon">🧠</div>
+          <h3>Smart Learning</h3>
+          <p>
+            Turn complex subjects into simple explanations,
+            practice questions and interactive learning.
+          </p>
+        </div>
+
+        <div class="feature-detail-card">
+          <div class="feature-detail-icon">🚀</div>
+          <h3>Futuristic AI Development</h3>
+          <p>
+            Explore future Aura capabilities, experimental AI
+            technology and the next generation of intelligent tools.
+          </p>
+        </div>
+
+        <div class="feature-detail-card">
+          <div class="feature-detail-icon">🎙️</div>
+          <h3>Voice AI</h3>
+          <p>
+            Speak naturally with Aura and interact using your voice
+            for a faster and more natural AI experience.
+          </p>
+        </div>
+
+        <div class="feature-detail-card">
+          <div class="feature-detail-icon">✍️</div>
+          <h3>Creative AI</h3>
+          <p>
+            Brainstorm ideas, create stories, improve writing and
+            explore your creativity with Aura.
+          </p>
+        </div>
+
+        <div class="feature-detail-card">
+          <div class="feature-detail-icon">⚡</div>
+          <h3>Productivity</h3>
+          <p>
+            Create plans, organize tasks, summarize information and
+            get more done with intelligent assistance.
+          </p>
+        </div>
+
+        <div class="feature-detail-card">
+          <div class="feature-detail-icon">🔮</div>
+          <h3>The Future of Aura</h3>
+          <p>
+            Aura is continuously evolving toward smarter,
+            more personalized and powerful AI experiences.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- =========================
+     HISTORY PAGE
+========================= -->
+
+    <section id="historyPage" class="history-page">
+
+      <div class="history-header">
+
+        <div>
+          <h2>Conversation History</h2>
+          <p>Your previous Aura questions</p>
+        </div>
+
+        <button id="clearHistoryBtn">
+          Clear History
+        </button>
+
+      </div>
+
+      <div id="historyList" class="history-list"></div>
+
+    </section>
+
+    <!-- FOOTER -->
+
+    <footer class="footer">
+
+      <div class="online">
+        <span class="dot"></span>
+        Aura AI Online
+      </div>
+
+      <div class="listening-footer">
+        Listening for your voice...
+        <span class="wave">
+          ▂▅▃▇▂▆▃▅▇▂
+        </span>
+      </div>
+
+      <div class="powered">
+        Powered by AI ✧
+      </div>
+
+    </footer>
+
+  </div>
+
+
+  <script>
+
+    const questionInput =
+      document.getElementById("question");
+
+    const topQuestion =
+      document.getElementById("topQuestion");
+
+    const askButton =
+      document.getElementById("askBtn");
+
+    const voiceButton =
+      document.getElementById("voiceBtn");
+
+    const chatBox =
+      document.getElementById("chatBox");
+
+    const status =
+      document.getElementById("status");
+
+    const robotImage =
+      document.getElementById("robotImage");
+
+    const robotPlaceholder =
+      document.getElementById("robotPlaceholder");
+
+
+    /* ROBOT IMAGE FALLBACK */
+
+    robotImage.onerror = function () {
+
+      robotImage.style.display = "none";
+
+      robotPlaceholder.style.display = "grid";
+
+    };
+
+
+    /* ADD MESSAGE */
+
+    function addMessage(text, type) {
+
+      const row =
+        document.createElement("div");
+
+      row.className =
+        "message-row " +
+        (type === "user"
+          ? "user-row"
+          : "");
+
+
+      if (type === "ai") {
+
+        const avatar =
+          document.createElement("div");
+
+        avatar.className = "avatar";
+
+        avatar.innerText = "✧";
+
+        row.appendChild(avatar);
+      }
+
+
+      const message =
+        document.createElement("div");
+
+      message.className =
+        "message " + type;
+
+
+      if (type === "ai") {
+
+        const sender =
+          document.createElement("span");
+
+        sender.className = "sender";
+
+        sender.innerText = "Aura";
+
+        message.appendChild(sender);
+
+
+        const answerText =
+          document.createElement("span");
+
+        answerText.className =
+          "answer-text";
+
+        answerText.innerText = text;
+
+        message.appendChild(answerText);
+
+      } else {
+
+        message.innerText = text;
+
+      }
+
+
+      row.appendChild(message);
+
+      chatBox.appendChild(row);
+
+      chatBox.scrollTop =
+        chatBox.scrollHeight;
+
+
+      return type === "ai"
+        ? message.querySelector(".answer-text")
+        : message;
+    }
+
+
+    /* ---------------- VOICE STATE ---------------- */
+
+    let recognition = null;
+
+    let recognitionRunning = false;
+
+    let waitingForQuestion = false;
+
+    let auraBusy = false;
+
+    let voiceModeEnabled = false;
+
+
+    /* ---------------- ASK AURA ---------------- */
+
+    async function askAura() {
+
+      const question =
+        questionInput.value.trim();
+
+      if (!question) return;
+
+      saveQuestionToHistory(question);
+      if (
+        recognition &&
+        recognitionRunning
+      ) {
+
+        auraBusy = true;
+
+        try {
+          recognition.stop();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+
+      addMessage(
+        question,
+        "user"
+      );
+
+
+      questionInput.value = "";
+
+      topQuestion.value = "";
+
+      status.innerText =
+        "Aura is thinking...";
+
+      askButton.disabled = true;
+
+      auraBusy = true;
+
+
+      const aiText =
+        addMessage(
+          "",
+          "ai"
+        );
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/api/chat",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+                message: question
+              })
+            }
+          );
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Aura request failed"
+          );
+
+        }
+
+
+        const reader =
+          response.body.getReader();
+
+        const decoder =
+          new TextDecoder();
+
+        let fullAnswer = "";
+
+
+        while (true) {
+
+          const {
+            done,
+            value
+          } =
+            await reader.read();
+
+
+          if (done) break;
+
+
+          const chunk =
+            decoder.decode(
+              value,
+              {
+                stream: true
+              }
+            );
+
+
+          fullAnswer += chunk;
+
+          aiText.innerText =
+            fullAnswer;
+
+
+          chatBox.scrollTop =
+            chatBox.scrollHeight;
+
+        }
+
+
+        status.innerText =
+          "Aura is speaking...";
+
+
+        speak(
+          fullAnswer,
+          function () {
+
+            auraBusy = false;
+
+            status.innerText =
+              voiceModeEnabled
+                ? "Say 'Hey Aura'"
+                : "Aura AI is ready";
+
+
+            if (voiceModeEnabled) {
+
+              setTimeout(
+                startListening,
+                500
+              );
+
+            }
+
+          }
+        );
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        aiText.innerText =
+          "Sorry, Aura could not generate an answer.";
+
+        auraBusy = false;
+
+        status.innerText =
+          "Error";
+
+      }
+
+
+      askButton.disabled = false;
+
+      questionInput.focus();
+
+    }
+
+
+    /* SEND BUTTON */
+
+    askButton.addEventListener(
+      "click",
+      askAura
+    );
+
+
+    /* ENTER ON CHAT */
+
+    questionInput.addEventListener(
+      "keydown",
+      function (event) {
+
+        if (event.key === "Enter") {
+
+          askAura();
+
+        }
+
+      }
+    );
+
+
+    /* TOP SEARCH */
+
+    topQuestion.addEventListener(
+      "keydown",
+      function (event) {
+
+        if (
+          event.key === "Enter"
+        ) {
+
+          const text =
+            topQuestion.value.trim();
+
+          if (!text) return;
+
+          questionInput.value =
+            text;
+
+          askAura();
+
+        }
+
+      }
+    );
+
+
+    /* ---------------- SPEECH RECOGNITION ---------------- */
+
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+
+    if (SpeechRecognition) {
+
+      recognition =
+        new SpeechRecognition();
+
+      recognition.lang =
+        "en-IN";
+
+      recognition.continuous =
+        false;
+
+      recognition.interimResults =
+        false;
+
+
+      recognition.onstart =
+        function () {
+
+          recognitionRunning = true;
+
+          voiceButton.classList.add(
+            "listening"
+          );
+
+
+          if (
+            waitingForQuestion
+          ) {
+
+            status.innerText =
+              "Listening to your question...";
+
+          } else {
+
+            status.innerText =
+              "Say 'Hey Aura'";
+
+          }
+
+        };
+
+
+      recognition.onend =
+        function () {
+
+          recognitionRunning = false;
+
+          voiceButton.classList.remove(
+            "listening"
+          );
+
+
+          if (
+            voiceModeEnabled &&
+            !auraBusy &&
+            !waitingForQuestion
+          ) {
+
+            setTimeout(
+              startListening,
+              600
+            );
+
+          }
+
+        };
+
+
+      recognition.onerror =
+        function (event) {
+
+          recognitionRunning = false;
+
+          voiceButton.classList.remove(
+            "listening"
+          );
+
+          console.log(
+            "Voice error:",
+            event.error
+          );
+
+
+          if (
+            event.error ===
+            "not-allowed"
+          ) {
+
+            voiceModeEnabled =
+              false;
+
+            status.innerText =
+              "Please allow microphone access.";
+
+            return;
+
+          }
+
+
+          if (
+            voiceModeEnabled &&
+            !auraBusy
+          ) {
+
+            setTimeout(
+              startListening,
+              900
+            );
+
+          }
+
+        };
+
+
+      recognition.onresult =
+        function (event) {
+
+          const spokenText =
+            event.results[
+              event.results.length - 1
+            ][0].transcript.trim();
+
+
+          console.log(
+            "Aura heard:",
+            spokenText
+          );
+
+
+          const lowerText =
+            spokenText.toLowerCase();
+
+
+          /* WAITING FOR WAKE WORD */
+
+          if (
+            !waitingForQuestion
+          ) {
+
+            const wakeDetected =
+              lowerText.includes(
+                "hey aura"
+              ) ||
+              lowerText.includes(
+                "hi aura"
+              ) ||
+              lowerText.includes(
+                "hey ora"
+              ) ||
+              lowerText.includes(
+                "hey aurora"
+              );
+
+
+            if (wakeDetected) {
+
+              waitingForQuestion =
+                true;
+
+              auraBusy = true;
+
+
+              try {
+                recognition.stop();
+              } catch (error) {
+                console.log(error);
+              }
+
+
+              status.innerText =
+                "Aura activated";
+
+
+              speak(
+                "Yes, I am listening.",
+                function () {
+
+                  auraBusy =
+                    false;
+
+                  status.innerText =
+                    "Listening to your question...";
+
+
+                  setTimeout(
+                    startListening,
+                    500
+                  );
+
+                }
+              );
+
+            }
+
+            return;
+
+          }
+
+
+          /* THIS IS THE QUESTION */
+
+          waitingForQuestion =
+            false;
+
+          auraBusy = true;
+
+
+          try {
+            recognition.stop();
+          } catch (error) {
+            console.log(error);
+          }
+
+
+          questionInput.value =
+            spokenText;
+
+          status.innerText =
+            "Aura is thinking...";
+
+          askAura();
+
+        };
+
+
+      /* CLICK MIC ONCE */
+
+      voiceButton.addEventListener(
+        "click",
+        function () {
+
+          voiceModeEnabled =
+            true;
+
+          waitingForQuestion =
+            false;
+
+          auraBusy =
+            false;
+
+          status.innerText =
+            "Say 'Hey Aura'";
+
+          startListening();
+
+        }
+      );
+
+
+    } else {
+
+      voiceButton.disabled =
+        true;
+
+      status.innerText =
+        "Voice recognition is not supported.";
+
+    }
+
+
+    /* START LISTENING */
+
+    function startListening() {
+
+      if (
+        !recognition ||
+        recognitionRunning ||
+        auraBusy ||
+        !voiceModeEnabled
+      ) {
+
+        return;
+
+      }
+
+
+      try {
+
+        recognition.start();
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    }
+
+
+    /* ---------------- AURA SPEAKS ---------------- */
+
+    function speak(
+      text,
+      onFinished
+    ) {
+
+      if (
+        !window.speechSynthesis
+      ) {
+
+        if (onFinished) {
+          onFinished();
+        }
+
+        return;
+
+      }
+
+
+      window.speechSynthesis.cancel();
+
+
+      const speech =
+        new SpeechSynthesisUtterance(
+          text
+        );
+
+
+      speech.lang =
+        "en-IN";
+
+      /* Robot-style voice */
+
+      speech.rate =
+        0.92;
+
+      speech.pitch =
+        0.72;
+
+      speech.volume =
+        1;
+
+
+      const voices =
+        window.speechSynthesis
+          .getVoices();
+
+
+      const preferredVoice =
+        voices.find(
+          voice =>
+            voice.name
+              .toLowerCase()
+              .includes(
+                "microsoft david"
+              )
+        ) ||
+
+        voices.find(
+          voice =>
+            voice.name
+              .toLowerCase()
+              .includes(
+                "microsoft mark"
+              )
+        ) ||
+
+        voices.find(
+          voice =>
+            voice.lang ===
+            "en-IN"
+        ) ||
+
+        voices.find(
+          voice =>
+            voice.lang
+              .startsWith("en")
+        );
+
+
+      if (preferredVoice) {
+
+        speech.voice =
+          preferredVoice;
+
+      }
+
+
+      speech.onend =
+        function () {
+
+          if (onFinished) {
+
+            onFinished();
+
+          }
+
+        };
+
+
+      speech.onerror =
+        function () {
+
+          if (onFinished) {
+
+            onFinished();
+
+          }
+
+        };
+
+
+      window.speechSynthesis.speak(
+        speech
+      );
+
+    }
+    /* =========================
+       FEATURE BOX CLICKS
+    ========================= */
+
+    const featureCards =
+      document.querySelectorAll(".feature");
+
+    const featureDetail =
+      document.getElementById("featureDetail");
+
+    const featureTitle =
+      document.getElementById("featureTitle");
+
+    const featureDescription =
+      document.getElementById("featureDescription");
+
+    const featureSuggestions =
+      document.getElementById("featureSuggestions");
+
+
+    const featureData = {
+
+      answers: {
+        title: "💬 Get Answers",
+
+        description:
+          "Ask Aura anything and get helpful answers and explanations.",
+
+        suggestions: [
+          "What is artificial intelligence?",
+          "Explain JavaScript",
+          "What is cloud computing?",
+          "Tell me something interesting"
+        ]
+      },
+
+
+      learn: {
+        title: "🎓 Learn & Study",
+
+        description:
+          "Use Aura as your personal tutor for education, programming, mathematics, science, English and other subjects.",
+
+        suggestions: [
+          "Teach me JavaScript",
+          "Help me learn mathematics",
+          "Teach me science",
+          "Create a study plan",
+          "Quiz me on general knowledge"
+        ]
+      },
+
+
+      productivity: {
+        title: "✦ Productivity",
+
+        description:
+          "Use Aura to organize your work, make plans, summarize information and get things done.",
+
+        suggestions: [
+          "Create my daily plan",
+          "Create a to-do list",
+          "Summarize a topic",
+          "Help me prepare for an interview",
+          "Create a weekly schedule"
+        ]
+      },
+
+
+      creative: {
+        title: "✎ Creative",
+
+        description:
+          "Use Aura for brainstorming, stories, writing, projects and creative ideas.",
+
+        suggestions: [
+          "Give me project ideas",
+          "Write a short story",
+          "Give me business ideas",
+          "Help me write a message",
+          "Give me creative AI ideas"
+        ]
+      }
+
+    };
+
+
+    featureCards.forEach(function (card) {
+
+      card.addEventListener("click", function () {
+
+        /* Remove selection from other cards */
+
+        featureCards.forEach(function (item) {
+          item.classList.remove("active");
+        });
+
+
+        /* Highlight clicked card */
+
+        card.classList.add("active");
+
+
+        /* Find which card was clicked */
+
+        const type =
+          card.dataset.feature;
+
+        const data =
+          featureData[type];
+
+
+        if (!data) {
+          return;
+        }
+
+
+        /* Show information */
+
+        featureTitle.innerText =
+          data.title;
+
+        featureDescription.innerText =
+          data.description;
+
+        featureSuggestions.innerHTML =
+          "";
+
+
+        /* Create suggestion buttons */
+
+        data.suggestions.forEach(function (text) {
+
+          const button =
+            document.createElement("button");
+
+          button.className =
+            "suggestion-btn";
+
+          button.innerText =
+            text;
+
+
+          button.addEventListener(
+            "click",
+            function (event) {
+
+              event.stopPropagation();
+
+              questionInput.value =
+                text;
+
+              questionInput.focus();
+
+            }
+          );
+
+
+          featureSuggestions.appendChild(
+            button
+          );
+
+        });
+
+
+        /* Open panel */
+
+        featureDetail.classList.add(
+          "show"
+        );
+
+      });
+
+    });
+    featureCards.forEach(function (card) {
+
+      // your existing feature code
+
+    });
+
+
+    /* =========================
+       TOP NAVIGATION
+    ========================= */
+
+    const navButtons =
+      document.querySelectorAll("nav button");
+
+    const homeSection =
+      document.querySelector(".main");
+
+    const featuresSection =
+      document.querySelector(".features");
+
+
+    /* =========================
+       AURA HISTORY
+    ========================= */
+
+    const homeNav =
+      document.getElementById("homeNav");
+
+    const featuresNav =
+      document.getElementById("featuresNav");
+
+    const historyNav =
+      document.getElementById("historyNav");
+
+    const settingsNav =
+      document.getElementById("settingsNav");
+
+    const mainPage =
+      document.querySelector(".main");
+
+    const historyPage =
+      document.getElementById("historyPage");
+
+    const historyList =
+      document.getElementById("historyList");
+
+    const clearHistoryBtn =
+      document.getElementById("clearHistoryBtn");
+
+
+    /* =========================
+      ACTIVE NAV BUTTON
+    ========================= */
+
+    function setActiveNav(button) {
+
+      document
+        .querySelectorAll("nav button")
+        .forEach(function (item) {
+
+          item.classList.remove("active");
+
+        });
+
+      button.classList.add("active");
+    }
+
+
+    /* =========================
+      SAVE QUESTION
+    ========================= */
+
+    function saveQuestionToHistory(question) {
+
+      let history =
+        JSON.parse(
+          localStorage.getItem("auraHistory")
+        ) || [];
+
+      history.push({
+        question: question,
+        time: new Date().toLocaleString()
+      });
+
+      localStorage.setItem(
+        "auraHistory",
+        JSON.stringify(history)
+      );
+    }
+
+
+    /* =========================
+      SHOW HISTORY
+    ========================= */
+
+    function showHistory() {
+
+      historyList.innerHTML = "";
+
+      const history =
+        JSON.parse(
+          localStorage.getItem("auraHistory")
+        ) || [];
+
+
+      if (history.length === 0) {
+
+        historyList.innerHTML =
+          '<div class="empty-history">' +
+          'No questions yet. Start chatting with Aura!' +
+          '</div>';
+
+        return;
+      }
+
+
+      history
+        .slice()
+        .reverse()
+        .forEach(function (item) {
+
+          const historyItem =
+            document.createElement("div");
+
+          historyItem.className =
+            "history-item";
+
+
+          const question =
+            document.createElement("div");
+
+          question.className =
+            "history-question";
+
+          question.innerText =
+            "💬 " + item.question;
+
+
+          const time =
+            document.createElement("div");
+
+          time.className =
+            "history-time";
+
+          time.innerText =
+            item.time;
+
+
+          historyItem.appendChild(question);
+          historyItem.appendChild(time);
+
+
+          /* CLICK OLD QUESTION */
+
+          historyItem.addEventListener(
+            "click",
+            function () {
+
+              historyPage.classList.remove("show");
+
+              mainPage.style.display = "grid";
+
+              setActiveNav(homeNav);
+
+              questionInput.value =
+                item.question;
+
+              questionInput.focus();
+
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+              });
+
+            }
+          );
+
+
+          historyList.appendChild(historyItem);
+
+        });
+
+    }
+
+
+    /* =========================
+      HOME BUTTON
+    ========================= */
+
+    homeNav.addEventListener(
+      "click",
+      function () {
+
+        setActiveNav(homeNav);
+        document
+          .getElementById("featuresPage")
+          .classList.remove("show");
+        historyPage.classList.remove("show");
+
+        mainPage.style.display = "grid";
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+
+      }
+    );
+
+
+    /* =========================
+      FEATURES BUTTON
+    ========================= */
+
+    featuresNav.addEventListener(
+      "click",
+      function () {
+
+        setActiveNav(featuresNav);
+
+        /* Hide Home */
+        mainPage.style.display = "none";
+
+        /* Hide History */
+        historyPage.classList.remove("show");
+
+        /* Show Features page */
+        document
+          .getElementById("featuresPage")
+          .classList.add("show");
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+
+      }
+    );
+
+
+    /* =========================
+      HISTORY BUTTON
+    ========================= */
+
+    historyNav.addEventListener(
+      "click",
+      function () {
+
+        setActiveNav(historyNav);
+        document
+          .getElementById("featuresPage")
+          .classList.remove("show");
+        mainPage.style.display = "none";
+
+        historyPage.classList.add("show");
+
+        showHistory();
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+
+      }
+    );
+
+
+    /* =========================
+      CLEAR HISTORY
+    ========================= */
+
+    clearHistoryBtn.addEventListener(
+      "click",
+      function () {
+
+        localStorage.removeItem("auraHistory");
+
+        showHistory();
+
+      }
+    );
+
+
+    /* =========================
+      SETTINGS BUTTON
+    ========================= */
+
+    settingsNav.addEventListener(
+      "click",
+      function () {
+
+        setActiveNav(settingsNav);
+
+        alert("Settings will be added next.");
+
+      }
+    );
+
+  </script>
+
+</body>
+
+</html>

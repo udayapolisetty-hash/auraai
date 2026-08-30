@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura AI</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #172a55 0%, #080b18 40%, #03040a 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 52px;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #5de0ff, #9f6bff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: #9ca8c7;
+      margin-bottom: 25px;
+    }
+
+    .robot {
+      width: 190px;
+      margin: 0 auto 30px;
+      animation: floating 3s ease-in-out infinite;
+    }
+
+    .antenna {
+      width: 5px;
+      height: 30px;
+      background: #55dcff;
+      margin: auto;
+      position: relative;
+    }
+
+    .antenna::before {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #a16eff;
+      left: -5px;
+      top: -9px;
+      box-shadow: 0 0 20px #a16eff;
+    }
+
+    .head {
+      width: 190px;
+      height: 130px;
+      border-radius: 40px;
+      background: linear-gradient(145deg, #172440, #0b1021);
+      border: 2px solid #4ddcff;
+      box-shadow: 0 0 25px rgba(77, 220, 255, .6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .face {
+      width: 145px;
+      height: 85px;
+      border-radius: 30px;
+      background: #030713;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .eye {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #5deaff;
+      box-shadow: 0 0 20px #5deaff;
+    }
+
+    .body {
+      width: 135px;
+      height: 90px;
+      margin: 5px auto;
+      border-radius: 25px 25px 40px 40px;
+      background: linear-gradient(145deg, #182540, #090f20);
+      border: 2px solid #745cff;
+      position: relative;
+    }
+
+    .core {
+      width: 35px;
+      height: 35px;
+      background: #6ce8ff;
+      border-radius: 50%;
+      position: absolute;
+      left: 50%;
+      top: 28px;
+      transform: translateX(-50%);
+      box-shadow: 0 0 25px #6ce8ff;
+    }
+
+    @keyframes floating {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .chat-box {
+      background: rgba(11, 16, 35, .9);
+      border: 1px solid #24335c;
+      border-radius: 20px;
+      padding: 18px;
+      min-height: 220px;
+      max-height: 350px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .user {
+      background: #2b3b72;
+      margin-left: 20%;
+    }
+
+    .ai {
+      background: #121a32;
+      border-left: 3px solid #5deaff;
+      margin-right: 20%;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(10, 15, 31, .95);
+      border-radius: 50px;
+      border: 1px solid #29375f;
+    }
+
+    #question {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: white;
+      padding: 15px;
+      font-size: 16px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      color: white;
+    }
+
+    #voiceBtn {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #26345d;
+      font-size: 20px;
+    }
+
+    #askBtn {
+      padding: 0 24px;
+      border-radius: 28px;
+      background: linear-gradient(90deg, #426cff, #9c5cff);
+      font-weight: bold;
+    }
+
+    .status {
+      margin-top: 10px;
+      color: #8593b3;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>AURA AI</h1>
+    <div class="subtitle">
+      Ask anything. Speak naturally. Get intelligent answers.
+    </div>
+
+    <div class="robot">
+      <div class="antenna"></div>
+
+      <div class="head">
+        <div class="face">
+          <div class="eye"></div>
+          <div class="eye"></div>
+        </div>
+      </div>
+
+      <div class="body">
+        <div class="core"></div>
+      </div>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+      <div class="message ai">
+        👋 Hello! I'm Aura AI. How can I help you today?
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input id="question" type="text" placeholder="Ask Aura anything..." autocomplete="off" />
+
+      <button id="voiceBtn">🎤</button>
+
+      <button id="askBtn">Ask Aura</button>
+    </div>
+
+    <div class="status" id="status">
+      Aura AI is ready
+    </div>
+
+  </div>
+
+  <script>
+    const questionInput = document.getElementById("question");
+    const askButton = document.getElementById("askBtn");
+    const voiceButton = document.getElementById("voiceBtn");
+    const chatBox = document.getElementById("chatBox");
+    const status = document.getElementById("status");
+
+    function addMessage(text, type) {
+      const message = document.createElement("div");
+      message.className = "message " + type;
+      message.innerText = text;
+      chatBox.appendChild(message);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      return message;
+    }
+
+    async function askAura() {
+      const question = questionInput.value.trim();
+
+      if (!question) return;
+
+      addMessage(question, "user");
+
+      questionInput.value = "";
+      status.innerText = "Aura is thinking...";
+      askButton.disabled = true;
+
+      const aiMessage = addMessage("", "ai");
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: question
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Aura request failed");
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        let fullAnswer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          const chunk = decoder.decode(value, {
+            stream: true
+          });
+
+          fullAnswer += chunk;
+
+          aiMessage.innerText = fullAnswer;
+
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        status.innerText = "Aura AI is ready";
+
+        speak(fullAnswer);
+
+      } catch (error) {
+        console.error(error);
+
+        aiMessage.innerText =
+          "Sorry, Aura could not generate an answer.";
+
+        status.innerText = "Error";
+      }
+
+      askButton.disabled = false;
+      questionInput.focus();
+    }
+
+    askButton.addEventListener("click", askAura);
+
+    questionInput.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        askAura();
+      }
+    });
+
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    let recognition;
+    let waitingForQuestion = false;
+    let recognitionRunning = false;
+
+    if (SpeechRecognition) {
+
+      recognition = new SpeechRecognition();
+
+      recognition.lang = "en-IN";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+
+      function startListening() {
+
+        if (recognitionRunning) return;
+
+        try {
+          recognition.start();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+
+      recognition.onstart = function () {
+
+        recognitionRunning = true;
+
+        if (waitingForQuestion) {
+          status.innerText = "Listening to your question...";
+        } else {
+          status.innerText = "Say 'Hey Aura'";
+        }
+      };
+
+
+      recognition.onend = function () {
+
+        recognitionRunning = false;
+
+        if (!waitingForQuestion) {
+
+          setTimeout(function () {
+            startListening();
+          }, 500);
+
+        }
+      };
+
+
+      recognition.onerror = function (event) {
+
+        recognitionRunning = false;
+
+        console.log("Voice error:", event.error);
+
+        if (event.error === "not-allowed") {
+
+          status.innerText =
+            "Please allow microphone access.";
+
+          return;
+        }
+
+        setTimeout(function () {
+          startListening();
+        }, 700);
+      };
+
+
+      recognition.onresult = function (event) {
+
+        const spokenText =
+          event.results[
+            event.results.length - 1
+          ][0].transcript.trim();
+
+        const lowerText =
+          spokenText.toLowerCase();
+
+
+        // WAITING FOR "HEY AURA"
+
+        if (!waitingForQuestion) {
+
+          if (
+            lowerText.includes("hey aura") ||
+            lowerText.includes("hi aura")
+          ) {
+
+            waitingForQuestion = true;
+
+            recognition.stop();
+
+            status.innerText = "Aura activated";
+
+            setTimeout(function () {
+
+              speak(
+                "Yes, I'm listening.",
+                function () {
+
+                  status.innerText =
+                    "Listening to your question...";
+
+                  setTimeout(function () {
+                    startListening();
+                  }, 500);
+
+                }
+              );
+
+            }, 300);
+          }
+
+          return;
+        }
+
+
+        // USER'S QUESTION
+
+        waitingForQuestion = false;
+
+        questionInput.value = spokenText;
+
+        status.innerText =
+          "Aura is thinking...";
+
+        askAura();
+      };
+
+
+      // CLICK MICROPHONE ONCE TO START AURA
+
+      voiceButton.addEventListener(
+        "click",
+        function () {
+
+          status.innerText =
+            "Say 'Hey Aura'";
+
+          startListening();
+        }
+      );
+
+    } else {
+
+      voiceButton.disabled = true;
+
+      status.innerText =
+        "Voice recognition is not supported in this browser.";
+    }
+
+
+    /* AURA SPEAKS THE ANSWER */
+
+    function speak(text, onFinished) {
+
+      if (!window.speechSynthesis) {
+
+        if (onFinished) {
+          onFinished();
+        }
+
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+
+      const speech =
+        new SpeechSynthesisUtterance(text);
+
+      speech.lang = "en-IN";
+      speech.rate = 1;
+      speech.pitch = 1;
+      speech.volume = 1;
+
+      speech.onend = function () {
+
+        if (onFinished) {
+          onFinished();
+        }
+      };
+
+      window.speechSynthesis.speak(speech);
+    }
+  </script>
+
+</body>
+
+</html>
