@@ -5,7 +5,11 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static("."));
-
+app.get("/", (req, res) => {
+  res.sendFile("aura.html", {
+    root: process.cwd()
+  });
+});
 app.post("/api/chat", async (req, res) => {
 
   try {
